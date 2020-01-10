@@ -1,4 +1,4 @@
-#include "stdafx.h"
+//#include "stdafx.h"
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp> 
@@ -7,7 +7,7 @@
 #include <opencv/cv.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
+//#include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/photo/photo.hpp>
 #include <opencv2/ml/ml.hpp>
  
@@ -409,9 +409,9 @@ void extract_difference_mask_between_keyframe(std::string keyframe_sequence_name
 	Mat first_gaussian;
 	GaussianBlur(first,first_gaussian,Size(3,3),1.0,1.0);
 	cvtColor(first_gaussian,first_lab,CV_BGR2Lab);
-
 	for(int i=0;i<keyframe_num;i++)
 	{
+
 		capture.read(_frame);
 		frame=_frame.clone();
 		Mat frame_gaussian;
@@ -485,20 +485,24 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 			}
 		}
 		img_lab=frame_lab.clone();
-	    cout<<i<<endl;
+	    cout<<i<<" ";
 		string save_path=intermediate_data_path_prefix+"Lab_diff_binary_"+GetNextNumber(i-startindex)+".png";
 		imwrite(save_path,result);
 	}
- 
+	cout<<endl;
 
 	string input1=intermediate_data_path_prefix+"Lab_diff_binary_%04d.png";
 	VideoCapture capture1=VideoCapture(input1);
-	Mat _frame;
+	if(!capture1.isOpened()){
+		std::cout << "Error opening Lab_diff_binary_%04d" << endl;
+	}
+	Mat _frame, _channel;
 
 	for(int i=1;i<=endindex;i++)
 	{
 		capture1.read(_frame);
-		if(countNonZero(_frame)<max_num)
+		cv::extractChannel(_frame, _channel, 1);
+		if(countNonZero(_channel)<max_num)
 			sign_array[i]=0;
 		else
 			sign_array[i]=1;
@@ -509,6 +513,7 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 	for(int i=0;i<N;i++)
 		selected_sign[i]=0;
 	selected_sign[0]=2;
+	//selected_sign[2] =1;
 	selected_sign[N-1]=1;
  
  
@@ -517,21 +522,22 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 		if((sign_array[i-1]==0)&&(sign_array[i]==0)&&(sign_array[i+1]==0)&&(sign_array[i+2]==1))
 		{
 			selected_sign[i]=1;
-			cout<<"first: "<<i<<"  ";
+			cout<<"end: "<<i<<endl;
 		}
 		if((sign_array[i-1]==1)&&(sign_array[i]==0)&&(sign_array[i+1]==0)&&(sign_array[i+2]==0))
 		{
 			selected_sign[i]=2;
-			cout<<"end: "<<i<<endl;
+			cout<<"first: "<<i<<"  ";
+
 		}
 	}
  
 	for(int i=0;i<N;i++)
 	{
 		if(selected_sign[i]!=0)
-		cout<<i<<"   ";
+		cout<<i<<"("<<selected_sign[i]<<")"<<"   ";
 	}
-
+	cout<<endl;
  
 	std::string input2=input_sequence;
 	VideoCapture capture2=VideoCapture(input2);
@@ -539,12 +545,12 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 
 	int count=0;
 	int j;
-	int flag;
+	int flag=1;
 	Mat Mean;
 
     vector<int> averaged_index;
 
-	int last_position;
+	int last_position=N-1;
 	for(int i=N-1;i>=0;i--)
 	{
 		if(selected_sign[i]==1)
@@ -553,13 +559,13 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 			break;
 		}
 	}
-
+	cout<<last_position<<endl;
 
     for(int i=0;i<N;)
 	{
 		if(selected_sign[i]==2)
 		{
-			cout<<"2   ";
+			cout<<"["<<i<<"]2   ";
 			capture2.read(frame2);
 			string good_frame_name=intermediate_data_path_prefix+"good_original_frame_"+GetNextNumber(i)+".png";
 			imwrite(good_frame_name,frame2);
@@ -578,8 +584,9 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 
 			if(selected_sign[i]==1)
 			{
-				cout<<"1   ";
+				cout<<"["<<i<<"]1   ";
 				averaged_index.push_back(1);
+				//cout<<averaged_index.size()<<endl;
 				flag=1;
 				Mean = Mean /(i-j+1);
 				Mean.convertTo(Mean,CV_8UC3);
@@ -605,12 +612,13 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 			}
 		}
 	}
+	cout<<endl;
 
-	cout<<averaged_index.size();
+	cout<<averaged_index.size()<<endl;
 	for(int i=0;i<averaged_index.size();i++)
 		if(averaged_index[i]!=0)
 			cout<<i<<"  ";
-
+	cout<<endl;
             
 	string input3=intermediate_data_path_prefix+"averaged_%04d.png";
 	VideoCapture capture3=VideoCapture(input3);
@@ -620,11 +628,10 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 	Mat output=frame3.clone();
 	int flag3;
 	imwrite(intermediate_data_path_prefix+"subsequence_colorshift_"+GetNextNumber(0)+".png",output);
-
 	for(int i=0;i<averaged_index.size();)
 	{
-		//cout<<i<<"  ";
-		if(averaged_index[i]==1)
+		cout<<i<<"  ";
+		if(i==0 || averaged_index[i]==1)
 		{
 			base=output.clone();
 			flag3=0;
@@ -669,17 +676,17 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 
 int main()
 {
-    const std::string input_sequence = "rose_%04d.png";
+    const std::string input_sequence = "../rose/rose_colorshift_%04d.png";
     const int num_frames = 5283;
-    const std::string intermediate_data_path_prefix = "intermediate_data_";
+    const std::string intermediate_data_path_prefix = "../rose/intermediate_data_";
     
-    prepare_temporary_data( input_sequence, num_frames, intermediate_data_path_prefix );
+    prepare_intermediate_data( input_sequence, num_frames, intermediate_data_path_prefix );
     
     const std::string keyframe_sequence_name=intermediate_data_path_prefix+"subsequence_last_%04d.png";
     const std::string first_keyframe_name=intermediate_data_path_prefix+"subsequence_colorshift_0000.png";
     const double keyframe_diff_threshold=8;
     const int keyframe_num=36;
-    const std::string keyframe_mask_output_path="rose_keyframe_mask_";
+    const std::string keyframe_mask_output_path="../rose/keyframe_mask_";
     
     extract_difference_mask_between_keyframe(keyframe_sequence_name, first_keyframe_name, keyframe_diff_threshold, keyframe_num, keyframe_mask_output_path);
     

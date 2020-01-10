@@ -1,4 +1,4 @@
-#include "stdafx.h"
+//#include "stdafx.h"
 #include "new_rolling_median.h"
 
 #include <opencv2/opencv.hpp>
@@ -8,7 +8,7 @@
 #include <opencv/cv.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
+//#include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/photo/photo.hpp>
 #include <opencv2/ml/ml.hpp>
  
@@ -20,7 +20,7 @@
 #include <vector>
 #include <map>
 #include <stack>
-
+#include <cstdio>
 using namespace cv;
 
 int main(int argc, const char* argv[]) // argv[1] maskname. argv[2] imgname. argv[3] buffersize. argv[4] outputname.

@@ -3,3 +3,4 @@
 
 ## On Windows, don't put quotes.
 python timerotate.py --glob 3200 --max-GB 2 'rose_subsequence_movestd_movingmedian_recover/*.png' rose-timewise/rose-timewise
+python timerotate.py --glob 3200 --max-GB 2 '../test/step3_subsequence_movestd_movingmedian_recover*.png' ../test/step4_

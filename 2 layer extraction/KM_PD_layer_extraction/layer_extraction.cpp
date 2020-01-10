@@ -1,7 +1,7 @@
 // stroke_timemap_collection.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+//#include "stdafx.h"
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp> 
@@ -10,7 +10,7 @@
 #include <opencv/cv.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
+//#include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/photo/photo.hpp>
 #include <opencv2/ml/ml.hpp>
  
@@ -30,14 +30,14 @@
 #include <zlib.h>
 
 
-#include "autolink.h"
-#include "config.h"
-#include "features.h"
-#include "forwards.h"
-#include "json.h"
-#include "reader.h"
-#include "value.h"
-#include "writer.h"
+#include "json/config.h"
+#include "json/autolink.h"
+#include "json/features.h"
+#include "json/forwards.h"
+#include "json/json.h"
+#include "json/reader.h"
+#include "json/value.h"
+#include "json/writer.h"
 
 
 

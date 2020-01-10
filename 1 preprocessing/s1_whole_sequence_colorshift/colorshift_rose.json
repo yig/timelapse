@@ -4,21 +4,13 @@
         {
             "filter": "VideoReader",
             "params": {
-					  "filename": "../../../session_georges/MVI_7031.MOV",
-		              "frameStop" : 1000,
+					  "filename": "../rose.mp4",
+		              "frameStop" : 5283,
 					  "frameStart" : 0,
-					  "readEvery" : 5
+					  "readEvery" : 1
 			        }
         },
-		{
-		    "filter": "PerspCorrection",
-			"params": {
-		                "out_width": 520,
-						"out_height": 400,
-						"display_factor": 1
-			}
-		},
-		
+	
 	    {
 		    "filter": "ColorShift",
 			"params": {
@@ -30,7 +22,7 @@
 		{
 		    "filter": "VideoSaver",
 		    "params": {
-					  "filename": "../test/test_colorshift_"
+					  "filename": "rose_colorshift_"
 					  }
 		}
     ]

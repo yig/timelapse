@@ -6,7 +6,7 @@ from ptsv import ptsv
 kUseCython = True
 if kUseCython:
     import pyximport
-    pyximport.install( setup_args={ 'script_args': ['--compiler=mingw32'], 'include_dirs': get_include() } )
+    pyximport.install( setup_args={'include_dirs': get_include() } )
     from mask_h import mask_h_threechannel
 
 class Struct( object ): pass

@@ -1,5 +1,5 @@
-sequence_name="rose-unrotate-%04d.png"
-output_path="rose_albedo_"
+sequence_name="../rose/step3_subsequence_movestd_movingmedian_recover%04d.png"
+output_path="../rose/rose_albedo_"
 num_frames=5334
 Reflectance=0.66 #### choose the value that smaller than 1./all_time_maxval.
 
@@ -31,11 +31,11 @@ for i in range(1,num_frames):
     if maxval > all_time_maxval:
         all_time_maxval = maxval
         ## Print it if it changes:
-        print all_time_maxval
+        print (all_time_maxval)
     ret,frame = capture.read()
 
-print 'Final all time max:', all_time_maxval
-print 1./all_time_maxval  ###### for rose, this value is 0.665217391304
+print ('Final all time max:', all_time_maxval)
+print (1./all_time_maxval ) ###### for rose, this value is 0.665217391304
 
 
 capture3=cv2.VideoCapture(sequence_name)
@@ -50,16 +50,16 @@ for i in range(0,num_frames):
     test3=modified[:,:,2]
 
     if test1[test1>255.0].shape[0]>0:
-        print test1[test1>255.0]
+        print (test1[test1>255.0])
  
     if test2[test2>255.0].shape[0]>0:
-        print test2[test2>255.0]
+        print (test2[test2>255.0])
         
     if test3[test3>255.0].shape[0]>0:
-        print test3[test3>255.0]
+        print (test3[test3>255.0])
         
     division3=(modified).clip(0,255)
  
     cv2.imwrite(output_path+'{0:04}'.format(i)+".png",division3)
 
-print 'finished'
+print ('finished')

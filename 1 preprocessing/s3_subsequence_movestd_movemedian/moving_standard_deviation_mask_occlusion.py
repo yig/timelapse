@@ -1,15 +1,16 @@
-INPUT_PATH_PREFIX = "rose_"
-OUTPUT_PATH_PREFIX = "rose_"
+INPUT_PATH_PREFIX = "../rose/"
+OUTPUT_PATH_PREFIX = "../rose/step3_"
+import cv2
+import numpy as np
+import bottleneck
+import subprocess
+
 #### These indices are the keyframe indices of the input sequence.
 KEYFRAME_INDICES=np.array([0,255,291,298,361,591,692,779,835,1024,1130,
                               1142,1509,1753,1790,2037,2097,2101,2456,3116,
                               3492,3576,3754,3981,4029,4051,4199,4219,4267,
                               4574,4627,4685,4813,4894,4917,4968,4974])
-
-import cv2
-import numpy as np
-import bottleneck
-import subprocess
+#KEYFRAME_INDICES=np.array([0,89,98])
 
 #function that modifies those functions in bottleneck module
 def bottleneck_centered( func, data, window, axis = -1 ):
@@ -31,12 +32,12 @@ def lerp_image(first,last,index,length,mask): #mask !=0 means common part.
     interpolation=np.uint8(first*(1.0-index*1.0/length)+last*(index*1.0/length)).clip(0,255)
     return interpolation
     
-print KEYFRAME_INDICES.shape
+print (KEYFRAME_INDICES.shape)
 
 
-capture=cv2.VideoCapture( INPUT_PATH_PREFIX + "subsequence_colorshift_%04d.png")
+capture=cv2.VideoCapture( INPUT_PATH_PREFIX + "intermediate_data_subsequence_colorshift_%04d.png")
 capture1=cv2.VideoCapture( INPUT_PATH_PREFIX + "keyframe_mask_%04d.png")
-capture2=cv2.VideoCapture( INPUT_PATH_PREFIX + "subsequence_last_%04d.png")
+capture2=cv2.VideoCapture( INPUT_PATH_PREFIX + "intermediate_data_subsequence_last_%04d.png")
 
 ret,firstframe=capture.read()
 
@@ -61,13 +62,13 @@ for index in range(1,KEYFRAME_INDICES.shape[0]):
     
     retval1,mask=capture1.read()
     
-    mask=cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel2)
+    mask=cv2.morphologyEx(mask[:,:,0], cv2.MORPH_CLOSE, kernel2)
     
     cv2.imwrite(OUTPUT_PATH_PREFIX + "keyframe_mask_closed_"+'{0:04}'.format(index)+".png",mask)
  
     nonzero_num=cv2.countNonZero(mask)
-    print nonzero_num
-    print mask.shape
+    print (nonzero_num)
+    print (mask.shape)
     
     if nonzero_num<mask.shape[0]*mask.shape[1]:
  
@@ -115,7 +116,7 @@ for index in range(1,KEYFRAME_INDICES.shape[0]):
 
         
         #recover by moving masked_median using C code
-        subprocess.call(['moving_median_with_mask_function.exe', rose_subsequence_mask_name, rose_subsequence_img_name,str(kbuffersize),rose_subsequence_mm_outputname])
+        subprocess.call(['./moving_median_with_mask_function', rose_subsequence_mask_name, rose_subsequence_img_name,str(kbuffersize),rose_subsequence_mm_outputname])
 
         frame_mask=mask
         recover_base=cv2.imread(rose_subsequence_mm_outputname)
@@ -128,7 +129,7 @@ for index in range(1,KEYFRAME_INDICES.shape[0]):
             temp[3*i+1,:,:]=recover_base[i,:,:]
             temp[3*i+2,:,:]=recover_base[i,:,:]
             
-        temp2=cv2.adaptiveBilateralFilter(temp,(3,15),200.0)
+        temp2=cv2.bilateralFilter(temp,3,200.0,200)
         
         for i in range(0,recover_base.shape[0]):
             recover_base[i,:,:]=temp2[3*i+1,:,:]
@@ -136,7 +137,6 @@ for index in range(1,KEYFRAME_INDICES.shape[0]):
         _frame=np.zeros(firstframe.shape,dtype=np.uint8)
 
         for i in range (0,KEYFRAME_INDICES[index]-KEYFRAME_INDICES[index-1]+kbuffersize+1):
-           
             _frame=lerp_image(first_keyframe,last_keyframe,i,KEYFRAME_INDICES[index]-KEYFRAME_INDICES[index-1],frame_mask)
             _frame[frame_mask==0]=(recover_base[:,i,:]).reshape((zero_num,3))
             cv2.imwrite(recover_image_output_path+'{0:04}'.format(count)+".png",_frame)
@@ -144,7 +144,7 @@ for index in range(1,KEYFRAME_INDICES.shape[0]):
 
         firstframe2=firstframe
 
-        print count   
+        print (count)
         
     else:
         
@@ -164,7 +164,7 @@ for index in range(1,KEYFRAME_INDICES.shape[0]):
             count=count+1
             
         firstframe2=firstframe
-        print count 
+        print (count )
     
     first_keyframe=last_keyframe
     ret2,last_keyframe=capture2.read()
