@@ -424,7 +424,7 @@ void mm_insert_init(mm_handle *mm, value_t val) {
 
       mm->first = node;
       ++mm->n_l;
-      mm->l_first_leaf = std::ceil((mm->n_l - 1) / (double)NUM_CHILDREN);
+      mm->l_first_leaf = ceil((mm->n_l - 1) / (double)NUM_CHILDREN);
       mm_update(mm, val);
     } 
     
@@ -437,7 +437,7 @@ void mm_insert_init(mm_handle *mm, value_t val) {
 
       mm->first = node;
       ++mm->n_s;
-      mm->s_first_leaf = std::ceil((mm->n_s - 1) / (double)NUM_CHILDREN);
+      mm->s_first_leaf = ceil((mm->n_s - 1) / (double)NUM_CHILDREN);
       mm_update(mm, val);
     }
   }

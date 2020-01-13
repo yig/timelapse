@@ -676,17 +676,17 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 
 int main()
 {
-    const std::string input_sequence = "../rose/rose_colorshift_%04d.png";
-    const int num_frames = 5283;
-    const std::string intermediate_data_path_prefix = "../rose/intermediate_data_";
+    const std::string input_sequence = "../7031/7031_colorshift_%04d.png";
+    const int num_frames = 1000;
+    const std::string intermediate_data_path_prefix = "../7031/intermediate_data_";
     
     prepare_intermediate_data( input_sequence, num_frames, intermediate_data_path_prefix );
     
     const std::string keyframe_sequence_name=intermediate_data_path_prefix+"subsequence_last_%04d.png";
     const std::string first_keyframe_name=intermediate_data_path_prefix+"subsequence_colorshift_0000.png";
     const double keyframe_diff_threshold=8;
-    const int keyframe_num=36;
-    const std::string keyframe_mask_output_path="../rose/keyframe_mask_";
+    const int keyframe_num=11;
+    const std::string keyframe_mask_output_path="../7031/keyframe_mask_";
     
     extract_difference_mask_between_keyframe(keyframe_sequence_name, first_keyframe_name, keyframe_diff_threshold, keyframe_num, keyframe_mask_output_path);
     

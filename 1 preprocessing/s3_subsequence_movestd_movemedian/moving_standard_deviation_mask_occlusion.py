@@ -1,16 +1,16 @@
-INPUT_PATH_PREFIX = "../rose/"
-OUTPUT_PATH_PREFIX = "../rose/step3_"
+INPUT_PATH_PREFIX = "../7031/"
+OUTPUT_PATH_PREFIX = "../7031/step3_"
 import cv2
 import numpy as np
 import bottleneck
 import subprocess
 
 #### These indices are the keyframe indices of the input sequence.
-KEYFRAME_INDICES=np.array([0,255,291,298,361,591,692,779,835,1024,1130,
-                              1142,1509,1753,1790,2037,2097,2101,2456,3116,
-                              3492,3576,3754,3981,4029,4051,4199,4219,4267,
-                              4574,4627,4685,4813,4894,4917,4968,4974])
-#KEYFRAME_INDICES=np.array([0,89,98])
+KEYFRAME_INDICES=np.array([0,255,291,298,361,591,692,779]) #,835,1024,1130,
+#                              1142,1509,1753,1790,2037,2097,2101,2456,3116,
+#                              3492,3576,3754,3981,4029,4051,4199,4219,4267,
+#                              4574,4627,4685,4813,4894,4917,4968,4974])
+KEYFRAME_INDICES=np.array([0,9,307,381,384,396,399,403,783,801,804])
 
 #function that modifies those functions in bottleneck module
 def bottleneck_centered( func, data, window, axis = -1 ):

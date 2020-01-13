@@ -4,8 +4,8 @@
         {
             "filter": "VideoReader",
             "params": {
-					  "filename": "../rose.mp4",
-		              "frameStop" : 5283,
+					  "filename": "../../rose_source.mp4",
+		              "frameStop" : 1000,
 					  "frameStart" : 0,
 					  "readEvery" : 1
 			        }
@@ -22,7 +22,7 @@
 		{
 		    "filter": "VideoSaver",
 		    "params": {
-					  "filename": "rose_colorshift_"
+					  "filename": "../rose/rose_colorshift_"
 					  }
 		}
     ]

@@ -1,5 +1,5 @@
-sequence_name="../rose/step3_subsequence_movestd_movingmedian_recover%04d.png"
-output_path="../rose/rose_albedo_"
+sequence_name="../7031/step3_subsequence_movestd_movingmedian_recover%04d.png"
+output_path="../7031/7031_albedo_"
 num_frames=5334
 Reflectance=0.66 #### choose the value that smaller than 1./all_time_maxval.
 

@@ -4,10 +4,10 @@
         {
             "type": "KM_stroke_extraction",
             "params": { 
-                         "source_name": "../../1 preprocessing/rose/rose_albedo_%04d.png",
-						 "firstframe_path": "../../1 preprocessing/rose/rose_albedo_0000.png",
+                         "source_name": "../../1 preprocessing/rose/step3_subsequence_movestd_movingmedian_recover%04d.png",
+						 "firstframe_path": "../../1 preprocessing/rose/step3_subsequence_movestd_movingmedian_recover0000.png",
 						 "threshold": 0.0,
-						 "frame_num": 5334,
+						 "frame_num": 1000,
 						 "final_replay_output_path": "../rose/rose_KM_replay_final.png",
 						 "KM_R_video_name": "../rose/rose_KM_R.avi",
 						 "KM_T_video_name": "../rose/rose_KM_T.avi",
@@ -24,10 +24,10 @@
 	    {
 		    "type": "PD_stroke_extraction",
 			"params": {
-                         "source_name": "../../1 preprocessing/rose/rose_albedo_%04d.png",
-						 "firstframe_path": "../../1 preprocessing/rose/rose_albedo_0000.png",
+                         "source_name": "../../1 preprocessing/rose/step3_subsequence_movestd_movingmedian_recover%04d.png",
+						 "firstframe_path": "../../1 preprocessing/rose/step3_subsequence_movestd_movingmedian_recover0000.png",
 						 "threshold": 0.0,
-						 "frame_num": 5334,
+						 "frame_num": 1000,
 						 "PD_paint_base_name":  "../rose/rose_PD_paint_",
                          "PD_alpha_base_name":  "../rose/rose_PD_alpha_",
 						 "PD_stroke_base_name": "../rose/rose_PD_stroke_",

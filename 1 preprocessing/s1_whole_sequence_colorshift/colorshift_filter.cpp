@@ -160,6 +160,8 @@ private:
 };
 
 
+
+
 class PerspCorrection : public VideoFilter
 {
 public:
@@ -239,6 +241,31 @@ void on_click(int event, int x, int y, int, void* data)
         imshow("image",dest);
 	}
 }
+
+class ExtractLuminance : public VideoFilter
+{
+public:
+    ExtractLuminance( const Json::Value& params )
+    {
+
+    }
+    
+protected:
+    bool doNextFrame( const Mat& inputFrame, Mat& outputFrame ) override
+    {
+		Mat lab;
+		
+		cvtColor(inputFrame,lab,CV_BGR2Lab);
+		//inputFrame.convertTo(lab,CV_32FC3,1.0/255.0);
+		outputFrame= cv::Mat(inputFrame.size(), inputFrame.type());
+		int from_to[] = { 1,0,1,1,1,2 };
+		mixChannels( &inputFrame, 1, &outputFrame, 1, from_to, 3 );
+		//cv::imshow("img", outputFrame);
+		//cv::waitKey();
+		return true;
+    }
+
+};
 
 class ColorShift: public VideoFilter
 {
@@ -700,6 +727,7 @@ VideoFilter* CreateVideoFilterByName( const std::string& filterName, const Json:
     else if( filterName == std::string("VideoSaver") ) 	    return new VideoSaver(params);
 	else if( filterName == std::string("ColorShift") )  	return new ColorShift(params);
 	else if( filterName == std::string("PerspCorrection") )  	return new PerspCorrection(params);
+	else if( filterName == std::string("ExtractLuminance") )  	return new ExtractLuminance(params);
 }
 
 

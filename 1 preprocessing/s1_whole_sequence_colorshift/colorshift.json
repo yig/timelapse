@@ -4,7 +4,7 @@
         {
             "filter": "VideoReader",
             "params": {
-					  "filename": "../../../session_georges/MVI_7031.MOV",
+					  "filename": "../../../georges/session3 - 2019-12-11/MVI_7031.MOV",
 		              "frameStop" : 1000,
 					  "frameStart" : 0,
 					  "readEvery" : 5
@@ -30,7 +30,7 @@
 		{
 		    "filter": "VideoSaver",
 		    "params": {
-					  "filename": "../test/test_colorshift_"
+					  "filename": "../7031/7031_colorshift_"
 					  }
 		}
     ]

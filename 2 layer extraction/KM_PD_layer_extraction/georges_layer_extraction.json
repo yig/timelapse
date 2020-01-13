@@ -1,0 +1,42 @@
+{
+    "operations": 
+	[
+        {
+            "type": "KM_stroke_extraction",
+            "params": { 
+                         "source_name": "../../1 preprocessing/7031/step3_subsequence_movestd_movingmedian_recover%04d.png",
+						 "firstframe_path": "../../1 preprocessing/7031/step3_subsequence_movestd_movingmedian_recover0000.png",
+						 "threshold": 0.0,
+						 "frame_num": 1000,
+						 "final_replay_output_path": "../7031/7031_KM_replay_final.png",
+						 "KM_R_video_name": "../7031/7031_KM_R.avi",
+						 "KM_T_video_name": "../7031/7031_KM_T.avi",
+						 "KM_stroke_video_name": "../7031/7031_KM_stroke.avi",
+						 "KM_stroke_image_base_path": "../7031/7031_KM_stroke_",
+						 "width":  520,
+						 "height": 400,
+						 "FPS": 25.0,
+						 "R_gzfile_base_name": "../7031/7031_KM_R_",
+						 "T_gzfile_base_name": "../7031/7031_KM_T_"
+			          }
+        },
+		
+	    {
+		    "type": "PD_stroke_extraction",
+			"params": {
+                         "source_name": "../../1 preprocessing/7031/step3_subsequence_movestd_movingmedian_recover%04d.png",
+						 "firstframe_path": "../../1 preprocessing/7031/step3_subsequence_movestd_movingmedian_recover0000.png",
+						 "threshold": 0.0,
+						 "frame_num": 1000,
+						 "PD_paint_base_name":  "../7031/7031_PD_paint_",
+                         "PD_alpha_base_name":  "../7031/7031_PD_alpha_",
+						 "PD_stroke_base_name": "../7031/7031_PD_stroke_",
+						 "final_replay_output_path": "../7031/7031_PD_replay_final.png",
+						 "PD_stroke_video_name": "../7031/7031_PD_stroke.avi",
+						 "width":  520,
+						 "height": 400,
+						 "FPS": 25.0 	
+			          }
+		} 
+    ]
+}
