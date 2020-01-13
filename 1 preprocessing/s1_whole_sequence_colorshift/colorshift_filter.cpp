@@ -159,7 +159,81 @@ private:
 	 int ReadEvery;
 };
 
+class PerspCorrectionImages : public VideoFilter
+{
+public:
+    PerspCorrectionImages( const Json::Value& params )
+    {
+        out_width=params["out_width"].asInt();
+		out_height=params["out_height"].asInt();
+		display_factor = params["display_factor"].asFloat();
+		roi = cv::Rect(0,0,1800,1000);
 
+    }
+    
+protected:
+    bool doNextFrame( const Mat& inputFrame, Mat& outputFrame ) override
+    {
+		std::cout<<refPoints.size()<<std::endl;
+		if(refPoints.size()==0)
+		{
+			//rectify first image from corners
+			click_four_points(inputFrame);
+			std::cout<<" done"<<endl;
+	
+			// Four corners of final image
+			std::vector<cv::Point2f> pts_dst;
+			pts_dst.push_back(Point2f(0,0));
+			pts_dst.push_back(Point2f(out_width,0));
+			pts_dst.push_back(Point2f(out_width,out_height));
+			pts_dst.push_back(Point2f(0,out_height));
+
+			// Calculate Homography
+			h =  cv::findHomography(posList, pts_dst);
+			cv::warpPerspective(inputFrame, outputFrame, h, cv::Size(out_width,out_height));
+			roi = cv::Rect(0,0,1800,1000);
+			posList.clear();
+			//register points for others images
+			click_four_points(outputFrame);
+			refPoints = posList;
+			std::cout<<refPoints.size()<<std::endl;
+		}
+		else
+		{
+			posList.clear();
+			click_four_points(inputFrame);
+			h =  cv::findHomography(posList, refPoints);
+			cv::warpPerspective(inputFrame, outputFrame, h, cv::Size(out_width,out_height));
+		}
+		return true;
+    }
+	void click_four_points(const Mat& inputFrame)
+	{
+		cv::namedWindow("image");
+		cv::setMouseCallback("image",on_click, this);
+		// Read source image.
+		cv::Mat dest;;
+		cv::resize(inputFrame,image, cv::Size(0,0), display_factor, display_factor) ;
+		cout<<image.size()<<endl;
+		dest = image(roi);
+		while (posList.size()<4)
+		{
+			cv::imshow("image",dest);
+			int k =  cv::waitKey(0);
+			if (k == 27)
+				break;
+		}
+	}
+
+public:
+    cv::Mat h;
+	float display_factor;
+	cv::Rect roi;
+	std::vector<cv::Point2f> posList, refPoints;
+	cv::Mat image;
+	int firstx, firsty, out_width, out_height;
+
+};
 
 
 class PerspCorrection : public VideoFilter
@@ -170,7 +244,7 @@ public:
         out_width=params["out_width"].asInt();
 		out_height=params["out_height"].asInt();
 		display_factor = params["display_factor"].asFloat();
-		roi = cv::Rect(0,0,1280,720);
+		roi = cv::Rect(0,0,1280,720); 
 
     }
     
@@ -221,7 +295,7 @@ public:
 };
 void on_click(int event, int x, int y, int, void* data)
 {
-	PerspCorrection* persp_correc =  static_cast<PerspCorrection*>(data);
+	PerspCorrectionImages* persp_correc =  static_cast<PerspCorrectionImages*>(data);
     if (event ==  EVENT_RBUTTONDOWN)
 	{
         std::cout<<"register position"<<std::endl;
@@ -237,8 +311,16 @@ void on_click(int event, int x, int y, int, void* data)
 	{
         persp_correc->roi.x += persp_correc->firstx -x;
         persp_correc->roi.y += persp_correc->firsty -y;
-        cv::Mat dest = persp_correc->image(persp_correc->roi);
-        imshow("image",dest);
+		std::cout<<persp_correc->roi<<std::endl;
+		if(0 <= persp_correc->roi.x 
+		&& persp_correc->roi.x + persp_correc->roi.width <= persp_correc->image.cols 
+		&& 0 <= persp_correc->roi.y 
+		&& persp_correc->roi.y + persp_correc->roi.height <= persp_correc->image.rows)
+		{
+	        cv::Mat dest = persp_correc->image(persp_correc->roi);
+			cout<<" top"<<std::endl;
+    	    imshow("image",dest);
+		}
 	}
 }
 
@@ -727,6 +809,7 @@ VideoFilter* CreateVideoFilterByName( const std::string& filterName, const Json:
     else if( filterName == std::string("VideoSaver") ) 	    return new VideoSaver(params);
 	else if( filterName == std::string("ColorShift") )  	return new ColorShift(params);
 	else if( filterName == std::string("PerspCorrection") )  	return new PerspCorrection(params);
+	else if( filterName == std::string("PerspCorrectionImages") )  	return new PerspCorrectionImages(params);
 	else if( filterName == std::string("ExtractLuminance") )  	return new ExtractLuminance(params);
 }
 

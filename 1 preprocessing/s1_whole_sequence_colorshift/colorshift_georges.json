@@ -4,12 +4,20 @@
         {
             "filter": "VideoReader",
             "params": {
-					  "filename": "../../../georges/mat1/mat1_%d.JPG",
+					  "filename": "../../../georges/mat1_raw/mat1_%d.JPG",
 		              "frameStop" : 20,
 					  "frameStart" : 0,
 					  "readEvery" : 1
 			        }
-        },
+		},
+		{
+		    "filter": "PerspCorrectionImages",
+			"params": {
+		                "out_width": 2080,
+						"out_height": 1600,
+						"display_factor": 1
+			}
+		},
 		{
 		    "filter": "ExtractLuminance",
 			"params": {
