@@ -18,14 +18,7 @@
 
 
 //json library
-#include "json/autolink.h"
-#include "json/config.h"
-#include "json/features.h"
-#include "json/forwards.h"
-#include "json/json.h"
-#include "json/reader.h"
-#include "json/value.h"
-#include "json/writer.h"
+#include <json/json.h>
 
 
 
@@ -111,7 +104,7 @@ public:
 		FrameStart=params["frameStart"].asInt();
 		ReadEvery=params["readEvery"].asInt();
 
-		outputFrame=Mat::zeros((int)m_video.get(CV_CAP_PROP_FRAME_HEIGHT),(int)m_video.get(CV_CAP_PROP_FRAME_WIDTH),CV_8UC3);
+		outputFrame=Mat::zeros((int)m_video.get(CAP_PROP_FRAME_HEIGHT),(int)m_video.get(CAP_PROP_FRAME_WIDTH),CV_8UC3);
     }
     
     bool IsFinished() const
@@ -337,7 +330,7 @@ protected:
     {
 		Mat lab;
 		
-		cvtColor(inputFrame,lab,CV_BGR2Lab);
+		cvtColor(inputFrame,lab,COLOR_BGR2Lab);
 		//inputFrame.convertTo(lab,CV_32FC3,1.0/255.0);
 		outputFrame= cv::Mat(inputFrame.size(), inputFrame.type());
 		int from_to[] = { 1,0,1,1,1,2 };
@@ -755,7 +748,7 @@ class VideoWriter : public VideoFilter
 public:
     VideoWriter( const Json::Value& params )
     {
-		m_video = cv::VideoWriter( params["filename"].asString(), CV_FOURCC('D','I','V','X'), params["FPS"].asDouble(), Size(params["width"].asInt(),params["height"].asInt()), true );
+		m_video = cv::VideoWriter( params["filename"].asString(), cv::VideoWriter::fourcc('D','I','V','X'), params["FPS"].asDouble(), Size(params["width"].asInt(),params["height"].asInt()), true );
     }
 	
 protected:
@@ -811,6 +804,7 @@ VideoFilter* CreateVideoFilterByName( const std::string& filterName, const Json:
 	else if( filterName == std::string("PerspCorrection") )  	return new PerspCorrection(params);
 	else if( filterName == std::string("PerspCorrectionImages") )  	return new PerspCorrectionImages(params);
 	else if( filterName == std::string("ExtractLuminance") )  	return new ExtractLuminance(params);
+	else return nullptr;
 }
 
 
