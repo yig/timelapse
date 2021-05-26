@@ -4,10 +4,10 @@
 #include <opencv2/highgui/highgui.hpp> 
 #include <opencv2/core/core.hpp> 
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv/cv.hpp>
+// #include <opencv/cv.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-//#include <open nonfree/features2d.hpp>
+// #include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/photo/photo.hpp>
 
  
@@ -18,14 +18,9 @@
 
 
 //json library
-#include "json/autolink.h"
-#include "json/config.h"
-#include "json/features.h"
-#include "json/forwards.h"
-#include "json/json.h"
-#include "json/reader.h"
-#include "json/value.h"
-#include "json/writer.h"
+// https://github.com/nlohmann/json
+#include <nlohmann/json.hpp>
+
 
 
 
@@ -48,15 +43,12 @@
 
 using namespace std;
 using namespace cv;
+using json = nlohmann::json;
 
 namespace
 {
     const bool SHOW_IMAGE = false;
 }
-
-void on_click(int event, int x, int y, int, void* data);
-
-
 
 /// Superclass
 class VideoFilter
@@ -74,7 +66,8 @@ public:
         bool success = this->doNextFrame( frame, result );
         if( !success ) return result;
 
-       
+		
+        
         assert( !result.empty() );
         
         if( m_output )
@@ -100,18 +93,17 @@ private:
 class VideoReader : public VideoFilter
 {
 public:
-    VideoReader( const Json::Value& params )
+    VideoReader( json params )
     {
-        m_video = VideoCapture( params["filename"].asString() );
-		if(!m_video.isOpened()){
-			std::cout << "Error opening video stream or file" << endl;
-		}
+		// cout << params << endl;
+        string filename(params["filename"]);
+        m_video = VideoCapture( filename );
 		count=0;
-		FrameStop=params["frameStop"].asInt();
-		FrameStart=params["frameStart"].asInt();
-		ReadEvery=params["readEvery"].asInt();
 
-		outputFrame=Mat::zeros((int)m_video.get(CV_CAP_PROP_FRAME_HEIGHT),(int)m_video.get(CV_CAP_PROP_FRAME_WIDTH),CV_8UC3);
+		FrameStart = params["frameStart"];
+		FrameStop = params["frameStop"];
+		
+		outputFrame=Mat::zeros((int)m_video.get(CAP_PROP_FRAME_HEIGHT),(int)m_video.get(CAP_PROP_FRAME_WIDTH),CV_8UC3);
     }
     
     bool IsFinished() const
@@ -138,15 +130,10 @@ protected:
 			 return true;
 	     }
 		else
-		{	
-			for (size_t i = 0; i < ReadEvery; i++)
-			{
-				/* code */
-				m_video.read(outputFrame);
-			}
-			count++;
-			//outputFrame = outputFrame(cv::Rect(0,0,3,3));
-			return true;
+		{		 m_video.read(outputFrame);
+				 count++;
+				 //outputFrame = outputFrame(cv::Rect(0,0,3,3));
+				 return true;
 		}
     }
 
@@ -156,206 +143,19 @@ private:
 	 int count;
 	 int FrameStop;
 	 int FrameStart;
-	 int ReadEvery;
 };
 
-class PerspCorrectionImages : public VideoFilter
-{
-public:
-    PerspCorrectionImages( const Json::Value& params )
-    {
-        out_width=params["out_width"].asInt();
-		out_height=params["out_height"].asInt();
-		display_factor = params["display_factor"].asFloat();
-		roi = cv::Rect(0,0,1800,1000);
-
-    }
-    
-protected:
-    bool doNextFrame( const Mat& inputFrame, Mat& outputFrame ) override
-    {
-		std::cout<<refPoints.size()<<std::endl;
-		if(refPoints.size()==0)
-		{
-			//rectify first image from corners
-			click_four_points(inputFrame);
-			std::cout<<" done"<<endl;
-	
-			// Four corners of final image
-			std::vector<cv::Point2f> pts_dst;
-			pts_dst.push_back(Point2f(0,0));
-			pts_dst.push_back(Point2f(out_width,0));
-			pts_dst.push_back(Point2f(out_width,out_height));
-			pts_dst.push_back(Point2f(0,out_height));
-
-			// Calculate Homography
-			h =  cv::findHomography(posList, pts_dst);
-			cv::warpPerspective(inputFrame, outputFrame, h, cv::Size(out_width,out_height));
-			roi = cv::Rect(0,0,1800,1000);
-			posList.clear();
-			//register points for others images
-			click_four_points(outputFrame);
-			refPoints = posList;
-			std::cout<<refPoints.size()<<std::endl;
-		}
-		else
-		{
-			posList.clear();
-			click_four_points(inputFrame);
-			h =  cv::findHomography(posList, refPoints);
-			cv::warpPerspective(inputFrame, outputFrame, h, cv::Size(out_width,out_height));
-		}
-		return true;
-    }
-	void click_four_points(const Mat& inputFrame)
-	{
-		cv::namedWindow("image");
-		cv::setMouseCallback("image",on_click, this);
-		// Read source image.
-		cv::Mat dest;;
-		cv::resize(inputFrame,image, cv::Size(0,0), display_factor, display_factor) ;
-		cout<<image.size()<<endl;
-		dest = image(roi);
-		while (posList.size()<4)
-		{
-			cv::imshow("image",dest);
-			int k =  cv::waitKey(0);
-			if (k == 27)
-				break;
-		}
-	}
-
-public:
-    cv::Mat h;
-	float display_factor;
-	cv::Rect roi;
-	std::vector<cv::Point2f> posList, refPoints;
-	cv::Mat image;
-	int firstx, firsty, out_width, out_height;
-
-};
-
-
-class PerspCorrection : public VideoFilter
-{
-public:
-    PerspCorrection( const Json::Value& params )
-    {
-        out_width=params["out_width"].asInt();
-		out_height=params["out_height"].asInt();
-		display_factor = params["display_factor"].asFloat();
-		roi = cv::Rect(0,0,1280,720); 
-
-    }
-    
-protected:
-    bool doNextFrame( const Mat& inputFrame, Mat& outputFrame ) override
-    {
-		if(h.rows==0)
-		{
-			cv::namedWindow("image");
-			cv::setMouseCallback("image",on_click, this);
-
-		// Read source image.
-			cv::Mat dest;;
-			cv::resize(inputFrame,image, cv::Size(0,0), display_factor, display_factor) ;
-			std::cout<<image.size()<<std::endl;
-			dest = image(roi);
-			while (posList.size()<4)
-			{
-				cv::imshow("image",dest);
-				int k =  cv::waitKey(0);
-				if (k == 27)
-					break;
-			}
-	
-			// Four corners of the book in destination image.
-			std::vector<cv::Point2f> pts_dst;
-			pts_dst.push_back(Point2f(0,0));
-			pts_dst.push_back(Point2f(out_width,0));
-			pts_dst.push_back(Point2f(out_width,out_height));
-			pts_dst.push_back(Point2f(0,out_height));
-
-			// Calculate Homography
-			h =  cv::findHomography(posList, pts_dst);
-		}
-    	// Warp source image to destination based on homography
-    	cv::warpPerspective(inputFrame, outputFrame, h, cv::Size(out_width,out_height));
-		return true;
-    }
-
-public:
-    cv::Mat h;
-	float display_factor;
-	cv::Rect roi;
-	std::vector<cv::Point2f> posList;
-	cv::Mat image;
-	int firstx, firsty, out_width, out_height;
-
-};
-void on_click(int event, int x, int y, int, void* data)
-{
-	PerspCorrectionImages* persp_correc =  static_cast<PerspCorrectionImages*>(data);
-    if (event ==  EVENT_RBUTTONDOWN)
-	{
-        std::cout<<"register position"<<std::endl;
-		std::cout<<Point2f(x+persp_correc->roi.x, y+persp_correc->roi.y)<<std::endl;
-        persp_correc->posList.push_back(Point2f(x+persp_correc->roi.x, y+persp_correc->roi.y));
-	}
-    if (event ==  EVENT_LBUTTONDOWN)
-	{
-        persp_correc->firstx=x;
-        persp_correc->firsty=y;
-	}
-    if (event ==  EVENT_LBUTTONUP)
-	{
-        persp_correc->roi.x += persp_correc->firstx -x;
-        persp_correc->roi.y += persp_correc->firsty -y;
-		std::cout<<persp_correc->roi<<std::endl;
-		if(0 <= persp_correc->roi.x 
-		&& persp_correc->roi.x + persp_correc->roi.width <= persp_correc->image.cols 
-		&& 0 <= persp_correc->roi.y 
-		&& persp_correc->roi.y + persp_correc->roi.height <= persp_correc->image.rows)
-		{
-	        cv::Mat dest = persp_correc->image(persp_correc->roi);
-			cout<<" top"<<std::endl;
-    	    imshow("image",dest);
-		}
-	}
-}
-
-class ExtractLuminance : public VideoFilter
-{
-public:
-    ExtractLuminance( const Json::Value& params )
-    {
-
-    }
-    
-protected:
-    bool doNextFrame( const Mat& inputFrame, Mat& outputFrame ) override
-    {
-		Mat lab;
-		
-		cvtColor(inputFrame,lab,CV_BGR2Lab);
-		//inputFrame.convertTo(lab,CV_32FC3,1.0/255.0);
-		outputFrame= cv::Mat(inputFrame.size(), inputFrame.type());
-		int from_to[] = { 1,0,1,1,1,2 };
-		mixChannels( &inputFrame, 1, &outputFrame, 1, from_to, 3 );
-		//cv::imshow("img", outputFrame);
-		//cv::waitKey();
-		return true;
-    }
-
-};
 
 class ColorShift: public VideoFilter
 {
 public:
-	ColorShift(const Json::Value& params)
+	ColorShift(json params)
 	{
-		percent=params["Percent"].asDouble();
-		Threshold=params["Threshold"].asDouble();
+        percent = params["Percent"];
+        Threshold = params["Threshold"];
+
+		// percent=params["Percent"].asDouble();
+		// Threshold=params["Threshold"].asDouble();
 	
 	}
 protected:
@@ -750,33 +550,12 @@ private:
 };
 
 
-class VideoWriter : public VideoFilter
-{
-public:
-    VideoWriter( const Json::Value& params )
-    {
-		m_video = cv::VideoWriter( params["filename"].asString(), CV_FOURCC('D','I','V','X'), params["FPS"].asDouble(), Size(params["width"].asInt(),params["height"].asInt()), true );
-    }
-	
-protected:
-    virtual bool doNextFrame( const Mat& inputFrame, Mat& outputFrame )
-    {
-        outputFrame = inputFrame.clone();
-        m_video.write( inputFrame );
-        return true;
-    }
-
-private:
-     cv::VideoWriter m_video;
-};
-
-
 class VideoSaver : public VideoFilter
 {
 public:
-    VideoSaver( const Json::Value& params )
+    VideoSaver( json params )
     {
-		m_path = params["filename"].asString();
+		m_path = params["filename"];
 		number=0;
     }
 	
@@ -802,35 +581,15 @@ private:
 	 int number;
 };
 
-VideoFilter* CreateVideoFilterByName( const std::string& filterName, const Json::Value& params )
+VideoFilter* CreateVideoFilterByName( const std::string& filterName, json params )
 {
          if( filterName == std::string("VideoReader") ) 	return new VideoReader(params);
-    else if( filterName == std::string("VideoWriter") ) 	return new ::VideoWriter(params);
     else if( filterName == std::string("VideoSaver") ) 	    return new VideoSaver(params);
 	else if( filterName == std::string("ColorShift") )  	return new ColorShift(params);
-	else if( filterName == std::string("PerspCorrection") )  	return new PerspCorrection(params);
-	else if( filterName == std::string("PerspCorrectionImages") )  	return new PerspCorrectionImages(params);
-	else if( filterName == std::string("ExtractLuminance") )  	return new ExtractLuminance(params);
 }
 
 
 
-
-std::string get_file_contents(const char *filename)
-{
-  std::ifstream in(filename, std::ios::in | std::ios::binary);
-  if (in)
-  {
-    std::string contents;
-    in.seekg(0, std::ios::end);
-    contents.resize(in.tellg());
-    in.seekg(0, std::ios::beg);
-    in.read(&contents[0], contents.size());
-    in.close();
-    return(contents);
-  }
-  throw(errno);
-}
 
 
 int main( int argc, const char* argv[] )
@@ -841,38 +600,33 @@ int main( int argc, const char* argv[] )
         std::cerr << "Usage: " << argv[0] << "path/to/params.json\n";
         return -1;
     }
-	const char *json_name = argv[1];
-	std::string str=get_file_contents(json_name);
-	cout<<str;
+	string json_name(argv[1]);
 
-	Json::Value root;
-	Json::Reader reader;
-	bool parsedSuccess = reader.parse(str, root, true);
-
-	if(! parsedSuccess)
+	ifstream file(json_name);
+	json root = json::parse(file);
+	
+	if(root.size() == 0)
 	{
 		// Report failures and their locations 
 		// in the document.
-		cout<<"Failed to parse JSON"<<endl 
-			<<reader.getFormatedErrorMessages()
-			<<endl;
-
+		cout<<"Failed to parse JSON"<<endl ;
 		getchar();
 		return -2;
 	}
     
-    const Json::Value operations = root["operations"];
-    if( operations.size() == 0 )
+    if( ! root.contains("operations"))
     {
         std::cerr << "No operations!\n";
         return -3;
     }
 
+    json operations = root["operations"];
 
     std::vector< VideoFilter* > filters;
     for( int i = 0; i < operations.size(); ++i )
     {
-        VideoFilter* nextFilter = CreateVideoFilterByName( operations[i]["filter"].asString(), operations[i]["params"] );
+        json params = operations[i]["params"] ;
+        VideoFilter* nextFilter = CreateVideoFilterByName( operations[i]["filter"], params );
 		filters.push_back( nextFilter );
 		if( i > 0 ) filters.at(i-1)->SetOutput( nextFilter );
     }

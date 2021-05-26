@@ -4,20 +4,11 @@
         {
             "filter": "VideoReader",
             "params": {
-					  "filename": "../../../georges/session3 - 2019-12-11/MVI_7031.MOV",
+					  "filename": "../videos/car.mp4",
 		              "frameStop" : 1000,
-					  "frameStart" : 0,
-					  "readEvery" : 5
+					  "frameStart" : 0
 			        }
         },
-		{
-		    "filter": "PerspCorrection",
-			"params": {
-		                "out_width": 520,
-						"out_height": 400,
-						"display_factor": 1
-			}
-		},
 		
 	    {
 		    "filter": "ColorShift",
@@ -30,7 +21,7 @@
 		{
 		    "filter": "VideoSaver",
 		    "params": {
-					  "filename": "../7031/7031_colorshift_"
+					  "filename": "../videos/car_colorshift_"
 					  }
 		}
     ]
