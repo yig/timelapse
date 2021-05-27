@@ -4,7 +4,7 @@
 #include <opencv2/highgui/highgui.hpp> 
 #include <opencv2/core/core.hpp> 
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv/cv.hpp>
+//#include <opencv/cv.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 //#include <opencv2/nonfree/features2d.hpp>
@@ -25,9 +25,17 @@
 #include <unsupported/Eigen/IterativeSolvers>
 #include <Eigen/Dense>
 
+
+//json library
+// https://github.com/nlohmann/json
+#include <nlohmann/json.hpp>
+
+
 using namespace cv;
 using namespace std;
+using json = nlohmann::json;
 
+/// format number to be 4 digit
 std::string GetNextNumber( int lastNum )
 {
     std::stringstream ss;
@@ -297,9 +305,9 @@ bool operator()(const std::pair<double,int> &left, const std::pair<double,int> &
 
 	outputFrame=RGB_recover.clone();
 	//fixedFrame=outputFrame.clone();// ?? inputframe.clone or outputframe.clone???????
-		                                // since 10/16/2014, we do colorshift based on fixedframe for a small
-		                                // sequence of frame, and do not update the fixedframe. that means, we compare each
-		                                // frame with first frame to do colorshift recovering.
+	// since 10/16/2014, we do colorshift based on fixedframe for a small
+	// sequence of frame, and do not update the fixedframe. that means, we compare each
+	// frame with first frame to do colorshift recovering.
 
 }
 
@@ -408,7 +416,7 @@ void extract_difference_mask_between_keyframe(std::string keyframe_sequence_name
 	Mat first_lab;
 	Mat first_gaussian;
 	GaussianBlur(first,first_gaussian,Size(3,3),1.0,1.0);
-	cvtColor(first_gaussian,first_lab,CV_BGR2Lab);
+	cvtColor(first_gaussian,first_lab,COLOR_BGR2Lab);
 	for(int i=0;i<keyframe_num;i++)
 	{
 
@@ -417,7 +425,7 @@ void extract_difference_mask_between_keyframe(std::string keyframe_sequence_name
 		Mat frame_gaussian;
         GaussianBlur(frame,frame_gaussian,Size(3,3),1.0,1.0);
 		Mat frame_lab;
-		cvtColor(frame_gaussian,frame_lab,CV_BGR2Lab);
+		cvtColor(frame_gaussian,frame_lab,COLOR_BGR2Lab);
 
 		Mat diff=Mat::zeros(first.rows,first.cols,CV_8UC1);
 
@@ -461,15 +469,18 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 	capture.read(frame);
 	Mat img=frame.clone();
 	Mat img_lab;
-	cvtColor(img,img_lab,CV_BGR2Lab);
+	// convert color to L*a*b
+	// https://docs.opencv.org/master/de/d25/imgproc_color_conversions.html#color_convert_rgb_lab
+	cvtColor(img,img_lab,COLOR_BGR2Lab);
 	
-	
+	// calculate the diff of current frame with the 0 frame
+	// generate the diff image in Lab space 
 	for(int i=1;i<=endindex;i++)
 	{
 		Mat result=Mat::zeros(frame.rows,frame.cols,CV_8UC1);
 		capture.read(frame);
 		Mat frame_lab;
-		cvtColor(frame,frame_lab,CV_BGR2Lab);
+		cvtColor(frame,frame_lab,COLOR_BGR2Lab);
 		Mat temp;
 		subtract(frame_lab,img_lab,temp);
 
@@ -491,6 +502,7 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 	}
 	cout<<endl;
 
+	// read in the lab diff image sequence
 	string input1=intermediate_data_path_prefix+"Lab_diff_binary_%04d.png";
 	VideoCapture capture1=VideoCapture(input1);
 	if(!capture1.isOpened()){
@@ -498,6 +510,7 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 	}
 	Mat _frame, _channel;
 
+	// mark the images diff images in Lab space( have more than max_num pixel different)
 	for(int i=1;i<=endindex;i++)
 	{
 		capture1.read(_frame);
@@ -508,7 +521,7 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 			sign_array[i]=1;
 	}
 
-
+	// by default choose the 0 frame and last frame 
     int selected_sign[N];
 	for(int i=0;i<N;i++)
 		selected_sign[i]=0;
@@ -516,7 +529,7 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 	//selected_sign[2] =1;
 	selected_sign[N-1]=1;
  
- 
+	// select the begin and end with no occluders frames
 	for(int i=2;i<endindex-2;i++)
 	{
 		if((sign_array[i-1]==0)&&(sign_array[i]==0)&&(sign_array[i+1]==0)&&(sign_array[i+2]==1))
@@ -531,7 +544,8 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 
 		}
 	}
- 
+
+	// print out the selected frame and the frame selected flag
 	for(int i=0;i<N;i++)
 	{
 		if(selected_sign[i]!=0)
@@ -559,8 +573,10 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
 			break;
 		}
 	}
+	// the last frame we'll deal
 	cout<<last_position<<endl;
 
+	// generate all no foreground occluders images
     for(int i=0;i<N;)
 	{
 		if(selected_sign[i]==2)
@@ -674,19 +690,30 @@ void prepare_intermediate_data( const std::string& input_sequence, const int N, 
     cout<<"get keyframes!"<<endl;
 }
 
-int main()
+int main( int argc, const char* argv[] )
 {
-    const std::string input_sequence = "../7031/7031_colorshift_%04d.png";
-    const int num_frames = 1000;
-    const std::string intermediate_data_path_prefix = "../7031/intermediate_data_";
-    
+	if( argc != 2 )
+    {
+        std::cerr << "Usage: " << argv[0] << "path/to/params.json\n";
+        return -1;
+    }
+
+    string json_name(argv[1]);
+
+    ifstream file(json_name);
+    json j = json::parse(file);
+
+    const std::string input_sequence = j["input_sequence"];
+    const int num_frames = j["num_frames"];
+    const std::string intermediate_data_path_prefix = j["intermediate_data_path_prefix"];
+
     prepare_intermediate_data( input_sequence, num_frames, intermediate_data_path_prefix );
     
-    const std::string keyframe_sequence_name=intermediate_data_path_prefix+"subsequence_last_%04d.png";
-    const std::string first_keyframe_name=intermediate_data_path_prefix+"subsequence_colorshift_0000.png";
-    const double keyframe_diff_threshold=8;
-    const int keyframe_num=11;
-    const std::string keyframe_mask_output_path="../7031/keyframe_mask_";
+    const std::string keyframe_sequence_name = intermediate_data_path_prefix + "subsequence_last_%04d.png";
+    const std::string first_keyframe_name = intermediate_data_path_prefix+"subsequence_colorshift_0000.png";
+    const double keyframe_diff_threshold= j["keyframe_diff_threshold"];
+    const int keyframe_num = j["keyframe_num"];
+    const std::string keyframe_mask_output_path = j["keyframe_mask_output_path"];
     
     extract_difference_mask_between_keyframe(keyframe_sequence_name, first_keyframe_name, keyframe_diff_threshold, keyframe_num, keyframe_mask_output_path);
     
