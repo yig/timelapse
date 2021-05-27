@@ -1,29 +1,28 @@
 {
     "operations":
-	[
+    [
         {
             "filter": "VideoReader",
             "params": {
-					  "filename": "../../videos/rose_source.mp4",
-		              "frameStop" : 1000,
-					  "frameStart" : 0,
-					  "readEvery" : 1
-			        }
+                      "filename": "../../videos/rose_source.mp4",
+                      "frameStop" : 5283,
+                      "frameStart" : 0
+                    }
         },
-	
-	    {
-		    "filter": "ColorShift",
-			"params": {
-		                "Percent": 0.5,
-						"Threshold": 0.0
-			}
-		},
-		
-		{
-		    "filter": "VideoSaver",
-		    "params": {
-					  "filename": "../../videos/rose_colorshift_"
-					  }
-		}
+        
+        {
+            "filter": "ColorShift",
+            "params": {
+                        "Percent": 0.5,
+                        "Threshold": 0.0
+            }
+        },
+        
+        {
+            "filter": "VideoSaver",
+            "params": {
+                      "filename": "../../videos/rose_colorshift_"
+                      }
+        }
     ]
 }
