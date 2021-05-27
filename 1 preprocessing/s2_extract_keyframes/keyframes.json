@@ -1,0 +1,8 @@
+{
+    "input_sequence": "../../videos/rose_colorshift_%04d.png",
+    "num_frames": 5283,
+    "intermediate_data_path_prefix" : "../../videos/intermediate_data_",
+    "keyframe_diff_threshold" : 8.0,
+    "keyframe_num": 36,
+    "keyframe_mask_output_path" : "../../videos/keyframe_mask_output_path"
+}
