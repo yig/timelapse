@@ -1,12 +1,10 @@
-import numpy as np
-cimport numpy as np
-ctypedef np.float64_t DTYPE_t
+# cython: language_level=3
+# cython: boundscheck=False
+# cython: wraparound=False
 
-cimport cython
+ctypedef double DTYPE_t
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-def mask_h_threechannel( np.ndarray[DTYPE_t, ndim=2] h not None, DTYPE_t threshold, np.ndarray[DTYPE_t, ndim=1] maskscratch not None ):
+cpdef mask_h_threechannel( DTYPE_t[:,:] h, DTYPE_t threshold, DTYPE_t[:] maskscratch ):
     assert h.shape[1] % 3 == 0
     
     cdef int row, col
@@ -16,7 +14,9 @@ def mask_h_threechannel( np.ndarray[DTYPE_t, ndim=2] h not None, DTYPE_t thresho
     
     ## Assume h is a contiguous column-major (Fortran) array
     cdef DTYPE_t* rawh = &h[0,0]
-    cdef DTYPE_t *rawh0, *rawh1, *rawh2
+    cdef DTYPE_t *rawh0
+    cdef DTYPE_t *rawh1
+    cdef DTYPE_t *rawh2
     ## Assume maskscratch is a contiguous 1D array
     cdef DTYPE_t* rawmask0 = &maskscratch[0]
     cdef DTYPE_t* rawmask

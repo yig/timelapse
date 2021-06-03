@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from numpy import *
 from ptsv import ptsv
@@ -6,7 +6,7 @@ from ptsv import ptsv
 kUseCython = True
 if kUseCython:
     import pyximport
-    pyximport.install( setup_args={'include_dirs': get_include() } )
+    pyximport.install()
     from mask_h import mask_h_threechannel
 
 class Struct( object ): pass

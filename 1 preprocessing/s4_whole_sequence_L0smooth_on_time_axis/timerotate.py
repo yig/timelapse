@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python3
 
 from numpy import *
 ## Only Pillow (PIL) works for Jianchao on Windows
