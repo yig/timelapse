@@ -1,3 +1,3 @@
 ## On Windows, don't put quotes.
-python timeunrotate.py --glob '../rose/rose-timewise/rose-timewise-320x480*.png' ../rose/rose-unrotate/rose
-python timeunrotate.py --glob '../test/step4_-800x1040-*.png' ../test/step4_unrotate
+python3 timeunrotate.py --glob '../rose/rose-timewise/rose-timewise-320x480*.png' ../rose/rose-unrotate/rose
+python3 timeunrotate.py --glob '../test/step4_-800x1040-*.png' ../test/step4_unrotate

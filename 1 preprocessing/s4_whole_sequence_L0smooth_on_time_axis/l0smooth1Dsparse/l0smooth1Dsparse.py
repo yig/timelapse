@@ -38,7 +38,7 @@ def compute_h( S, num_channels, Lambda, beta, prepared ):
     square( h, out = h2 )
     
     h2sum[:] = 0
-    for c in xrange( num_channels ):
+    for c in range( num_channels ):
         h2sum += h2[:,c::num_channels]
     del h2
     
@@ -57,7 +57,7 @@ def compute_h( S, num_channels, Lambda, beta, prepared ):
     
     ## This is faster still:
     mask[:] = h2sum < Lambda/beta
-    for c in xrange( num_channels ):
+    for c in range( num_channels ):
         h[:,c::num_channels][ mask ] = 0.
     
     return h
@@ -221,7 +221,7 @@ def l0smooth1D( I, axis = 0, channels = False, Lambda = None, kappa = None, harm
     prepared = prepare_solve_for_S( S, num_channels )
     while beta < betamax:
         if i % 10 == 0:
-            print beta, betamax
+            print(beta, betamax)
         
         h = compute_h( S, num_channels, Lambda, beta, prepared )
         S = solve_for_S( S, I, h, beta, prepared, constrained = constrained, w_lsq = w_lsq )
@@ -242,31 +242,31 @@ def smooth_and_save( inpath, axis = 0, outpath = None, Lambda = None, kappa = No
         outpath = inpath_base + "-l0-axis_%d-Lambda_%3g-kappa_%g.png" % ( axis, kDefaultLambda if Lambda is None else Lambda, kDefaultKappa if kappa is None else kappa )
     
     import skimage.io
-    print 'Loading:', inpath
+    print('Loading:', inpath)
     I = skimage.img_as_float( skimage.io.imread( inpath ) )
     assert len( I.shape ) == 3
     
     if w_lsq is not None and constrained is None:
         constrained = [ 0, I.shape[ axis ]-1 ]
     
-    print 'Lambda:', Lambda
-    print 'kappa:', kappa
-    print 'Constraint weight:', w_lsq
-    print 'Constraints:', constrained
+    print('Lambda:', Lambda)
+    print('kappa:', kappa)
+    print('Constraint weight:', w_lsq)
+    print('Constraints:', constrained)
     
     S = l0smooth1D( I, axis = axis, channels = True, Lambda = Lambda, kappa = kappa, constrained = constrained, w_lsq = w_lsq )
     S = S.clip(0,1)
     assert len( S.shape ) == 3
     
     skimage.io.imsave( outpath, S )
-    print 'Saved:', outpath
+    print('Saved:', outpath)
 
 def main():
     import sys
     argv = list( sys.argv[1:] )
     
     def usage():
-        print >> sys.stderr, "Usage:", sys.argv[0], "[--lambda 2e-2] [--kappa 1.5] [--constraint-weight 0.] [--constraints [frame index, frame index, ...] (default: [0,num_frames-1])] path/to/input axis path/to/output"
+        print("Usage:", sys.argv[0], "[--lambda 2e-2] [--kappa 1.5] [--constraint-weight 0.] [--constraints [frame index, frame index, ...] (default: [0,num_frames-1])] path/to/input axis path/to/output", file=sys.stderr)
         ## We liked Lambda = 5e-3, Kappa = 1.1
         sys.exit(-1)
     
@@ -312,10 +312,10 @@ def main():
     
     import os
     if os.path.exists( outpath ):
-        print >> sys.stderr, 'ERROR: Refusing to clobber output path:', outpath
+        print('ERROR: Refusing to clobber output path:', outpath, file=sys.stderr)
         usage()
     if not os.path.isfile( inpath ):
-        print >> sys.stderr, 'ERROR: Input path is not a file:', inpath
+        print('ERROR: Input path is not a file:', inpath, file=sys.stderr)
         usage()
     
     if len( argv ) != 0: usage()

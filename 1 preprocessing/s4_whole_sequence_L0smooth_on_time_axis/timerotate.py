@@ -7,7 +7,7 @@ from PIL import Image
 import os, sys
 
 def usage():
-    print >> sys.stderr, 'Usage:', sys.argv[0], '[--glob] [--max-GB 2] spatial_pixels_per_timewise_image path/to/image1 [path/to/image2 ... path/to/imageN] path/to/output_basename'
+    print('Usage:', sys.argv[0], '[--glob] [--max-GB 2] spatial_pixels_per_timewise_image path/to/image1 [path/to/image2 ... path/to/imageN] path/to/output_basename', file=sys.stderr)
     sys.exit(-1)
 
 argv = list( sys.argv[1:] )
@@ -50,13 +50,13 @@ if glob_filenames:
 
 image_shape = asarray( Image.open( filenames[0] ).convert( 'RGB' ), dtype = uint8 ).shape
 # spatial_pixels_per_output = min( max_pixels_per_image // len( filenames ), prod( image_shape[:2] ) )
-print 'Image dimensions:', image_shape[0], 'by', image_shape[1], 'and', len( filenames ), 'frames.'
-print 'Each time-wise image will have', spatial_pixels_per_output, 'of the pixels (row-major)',
+print('Image dimensions:', image_shape[0], 'by', image_shape[1], 'and', len( filenames ), 'frames.')
+print('Each time-wise image will have', spatial_pixels_per_output, 'of the pixels (row-major)', end=' ')
 num_images = (prod( image_shape[:2] )+spatial_pixels_per_output-1)//spatial_pixels_per_output
-print 'for a total of', num_images, 'images.'
+print('for a total of', num_images, 'images.')
 
 if spatial_pixels_per_output < 1:
-    print >> sys.stderr, 'ERROR: spatial_pixels_per_timewise_image must be a positive integer.'
+    print('ERROR: spatial_pixels_per_timewise_image must be a positive integer.', file=sys.stderr)
     usage()
 
 ## 2 GB
@@ -64,27 +64,27 @@ max_ram_usage_bytes = int( max_GB*1024*1024*1024 )
 max_spatial_pixels_in_memory = max_ram_usage_bytes // ( len(filenames) * image_shape[2] )
 spatial_pixels_in_memory = spatial_pixels_per_output * ( max_spatial_pixels_in_memory // spatial_pixels_per_output )
 if spatial_pixels_in_memory < spatial_pixels_per_output:
-    print >> sys.stderr, 'ERROR: Maximum RAM usage would be exceeded to save even one image',
-    print >> sys.stderr, '(which would take', ( spatial_pixels_per_output * len(filenames) * image_shape[2] ), 'bytes).'
+    print('ERROR: Maximum RAM usage would be exceeded to save even one image', end=' ', file=sys.stderr)
+    print('(which would take', ( spatial_pixels_per_output * len(filenames) * image_shape[2] ), 'bytes).', file=sys.stderr)
     usage()
 
 stack = empty( ( spatial_pixels_in_memory, len(filenames), image_shape[2] ), dtype = uint8 )
 count = 0
-for mem_off in xrange( 0, prod( image_shape[:2] ), spatial_pixels_in_memory ):
+for mem_off in range( 0, prod( image_shape[:2] ), spatial_pixels_in_memory ):
     mem_end = min( mem_off + spatial_pixels_in_memory, prod( image_shape[:2] ) )
     
     for frame_count, fname in enumerate( filenames ):
-        print 'Loading "%s"' % ( fname, )
+        print('Loading "%s"' % ( fname, ))
         img = Image.open( fname ).convert( 'RGB' )
         arr = asarray( img, dtype = uint8 )
         arr = arr.reshape( -1, arr.shape[2] )[ mem_off : mem_end ]
         stack[ :mem_end-mem_off, frame_count, : ] = arr
     
-    for save_off in xrange( 0, mem_end-mem_off, spatial_pixels_per_output ):
+    for save_off in range( 0, mem_end-mem_off, spatial_pixels_per_output ):
         save_end = min( save_off + spatial_pixels_per_output, mem_end-mem_off )
         
         outname = outname_basename + '-%dx%d-%04d.png' % ( image_shape[0], image_shape[1], count )
         Image.fromarray( stack[ save_off:save_end ] ).save( outname )
-        print 'Saved', outname
+        print('Saved', outname)
         
         count += 1
